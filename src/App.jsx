@@ -1,87 +1,105 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import SearchBar from './components/SearchBar'
+import WeatherGrid from './components/WeatherGrid'
 
 function App() {
 
   const [cityName, setCityName] = useState("")
-  const [data, setData] = useState(null)
+  const [weatherData, setWeatherData] = useState(null)
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
+  const selectInput = useRef(null)
+
+  function focusInputField() {
+    selectInput.current?.focus()
+  }
+
+  useEffect(() => {
+    focusInputField()
+    setCityName(localStorage.getItem("previousCityName") || "")
+  }, [])
 
   async function searchData(e) {
     e.preventDefault() // prevents the page from reloading
+    setWeatherData(null)
+    setError("")
+    setLoading(true)
 
-    const responseCordinates = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1&language=en&format=json`
-    )
-    const data = await responseCordinates.json()
-    fetchWeatherData(data)
+    try {
+      const responseCoordinates = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${cityName.trim()}&count=1&language=en&format=json`
+      )
+      const coordinateData = await responseCoordinates.json()
+      if (!coordinateData.results) {
+        setWeatherData(null)
+        setError("Sorry! We couldn't find that city")
+        return
+      }
+      console.log(coordinateData)
+      await fetchWeatherData(coordinateData.results[0])
+    }
+    catch (error) {
+      console.error(error)
+      setWeatherData(null)
+      setError("Network error. Please try again")
+    }
+    finally {
+      setLoading(false)
+    }
   }
 
-  async function fetchWeatherData(data) {
-    const responseWeatherData = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${data.results[0].latitude}&longitude=${data.results[0].longitude}&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&current=temperature_2m,relative_humidity_2m,precipitation,rain,is_day&timezone=Asia%2FKolkata`
-    )
-    const weatherData = await responseWeatherData.json()
-    console.log(weatherData)
-    setData(weatherData)
+  async function fetchWeatherData(selectedCity) {
+    try {
+      const responseWeatherData = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${selectedCity.latitude}&longitude=${selectedCity.longitude}&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&current=temperature_2m,relative_humidity_2m,precipitation,rain,is_day&timezone=Asia%2FKolkata`
+      )
+      if (!responseWeatherData.ok) {
+        setWeatherData(null)
+        setError("Server error")
+        return
+      }
+      const weatherDataFromApi = await responseWeatherData.json()
+      console.log(weatherDataFromApi)
+      const data = {
+        ...weatherDataFromApi,  // merging two separate objects to for a single object having property of both
+        selectedCity
+      }
+      setWeatherData(data)
+      localStorage.setItem("previousCityName", cityName)
+
+    }
+    catch (error) {
+      console.error(error)
+      setWeatherData(null)
+      setError("Network error")
+    }
   }
 
   return (
-    <div>
-      <div className='w-3/4 h-3/4 gap-4 bg-gray-700 mt-5 m-auto  rounded-4xl flex flex-col text-white justify-center items-center p-4 '>
-        <form
-          onSubmit={searchData}>
-          <input
-            type="text"
-            placeholder='Enter city name'
-            value={cityName}
-            onChange={(e) => { setCityName(e.target.value) }}
-            className='bg-gray-300 p-4 text-black outline-none rounded-l-3xl' />
-          <button
-            className='bg-sky-800 cursor-pointer rounded-r-4xl p-4 text-white'
-            type='submit'
-          >Search
-          </button>
-        </form>
-        {data && (
-          <div className='w-5/6 h-3/4 grid grid-cols-4  bg-gray-400 rounded-4xl p-4 gap-8'>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Current Temperature :</h2>
-              {data.current.temperature_2m}
-              {data.current_units.temperature_2m}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Humidity :</h2>
-              {data.current.relative_humidity_2m}
-              {data.current_units.relative_humidity_2m}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Precipitation :</h2>
-              {data.current.precipitation}
-              {data.current_units.precipitation}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>UV Index :</h2>
-              {data.daily.uv_index_max[0]}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Max Temperature :</h2>
-              {data.daily.temperature_2m_max[0]}
-              {data.daily_units.temperature_2m_max}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Min Temperature :</h2>
-              {data.daily.temperature_2m_min[0]}
-              {data.daily_units.temperature_2m_min}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Sunrise :</h2>
-              {data.daily.sunrise[0]}
-            </div>
-            <div className='flex bg-gray-500 gap-1 justify-center items-center cursor-pointer hover:bg-gray-600 rounded-3xl p-4'>
-              <h2>Sunset :</h2>
-              {data.daily.sunset[0]}
-            </div>
-          </div>
+    <div className='h-screen bg-linear-to-br from-slate-950 p-20 via-slate-800 to-blue-950'>
+      <div className='w-3/4 gap-4 bg-gray-700 m-auto rounded-4xl flex flex-col text-white justify-center items-center p-4 '>
+        <h1 className='text-4xl font-bold'>
+          🌤️ Weather Dashboard
+        </h1>
+        <SearchBar
+          cityName={cityName}
+          setCityName={setCityName}
+          loading={loading}
+          searchData={searchData}
+          selectInput={selectInput}
+          weatherData={weatherData}
+        />
+        <div className='flex  justify-center items-center gap-3 rounded-3xl'>
+          {weatherData ? <h1 className='text-xl  starting:opacity-0 transition-all duration-500 rounded-3xl'>📍 {weatherData.selectedCity.name} </h1> : ""}
+          {weatherData ? <h1 className='text-xl flex  starting:opacity-0 transition-all duration-500 rounded-3xl'>
+            ☀️ {weatherData.current.temperature_2m} {weatherData.current_units.temperature_2m}</h1> : ""}
+        </div>
+        <p className='text-2xl'>{error}</p>
+        {weatherData && (
+          <WeatherGrid
+            weatherData={weatherData}
+          />
         )}
       </div>
     </div>
