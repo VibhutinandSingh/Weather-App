@@ -2,6 +2,9 @@
 
 A modern and responsive weather dashboard built with **React** and **Tailwind CSS** that allows users to search for any city and view its current weather information along with today's forecast.
 
+## 🌐 Live Demo
+🔗 https://your-project-name.vercel.app
+
 ## 📸 Preview
 
 ![GitHub Profile Finder Preview](./assets/weather-app-preview.png)
