@@ -89,7 +89,7 @@ function App() {
 
   return (
     <div className='min-h-screen bg-linear-to-br from-slate-950 p-10 via-slate-800 to-blue-950'>
-      <div className='w-fit gap-2 max-h-[90vh] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl m-auto rounded-4xl flex flex-col text-white justify-center items-center p-5 md:p-10 lg:p-10 '>
+      <div className='w-fit gap-2 max-h-[80vh] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl m-auto rounded-4xl flex flex-col text-white justify-center items-center p-5 md:p-10 lg:p-10 '>
         <h1 className='text-4xl text-center  font-bold'>
           🌤️ Weather Dashboard
         </h1>
