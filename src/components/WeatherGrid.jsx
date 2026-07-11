@@ -1,5 +1,30 @@
 import WeatherCard from "./WeatherCard"
 
+function formatTime(isoTime) {
+    const date = new Date(isoTime)
+    let hour = date.getHours()
+    let minutes = date.getMinutes()
+    let period = ""
+    if (hour >= 12) {
+        period = "PM"
+    }
+    else {
+        period = "AM"
+    }
+    if (hour === 0) {
+        hour = 12
+    }
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    if (hour > 12) {
+        hour = hour - 12
+    }
+    return (
+        `${hour}:${minutes} ${period}`
+    )
+}
+
 function WeatherGrid({ weatherData }) {
     const cards = [
         {
