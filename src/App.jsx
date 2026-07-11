@@ -15,6 +15,19 @@ function App() {
     selectInput.current?.focus()
   }
 
+  function dayNight() {
+    if (weatherData.current.is_day) {
+      return (
+        <h1>🌅 Day</h1>
+      )
+    }
+    else {
+      return (
+        <h1>🌙 Night </h1>
+      )
+    }
+  }
+
   useEffect(() => {
     focusInputField()
     setCityName(localStorage.getItem("previousCityName") || "")
@@ -36,7 +49,6 @@ function App() {
         setError("Sorry! We couldn't find that city")
         return
       }
-      console.log(coordinateData)
       await fetchWeatherData(coordinateData.results[0])
     }
     catch (error) {
@@ -60,7 +72,6 @@ function App() {
         return
       }
       const weatherDataFromApi = await responseWeatherData.json()
-      console.log(weatherDataFromApi)
       const data = {
         ...weatherDataFromApi,  // merging two separate objects to for a single object having property of both
         selectedCity
@@ -77,9 +88,9 @@ function App() {
   }
 
   return (
-    <div className='h-screen bg-linear-to-br from-slate-950 p-20 via-slate-800 to-blue-950'>
-      <div className='w-3/4 gap-4 bg-gray-700 m-auto rounded-4xl flex flex-col text-white justify-center items-center p-4 '>
-        <h1 className='text-4xl font-bold'>
+    <div className='min-h-screen bg-linear-to-br from-slate-950 p-10 via-slate-800 to-blue-950'>
+      <div className='w-fit gap-2 max-h-[90vh] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl m-auto rounded-4xl flex flex-col text-white justify-center items-center p-5 md:p-10 lg:p-10 '>
+        <h1 className='text-4xl text-center  font-bold'>
           🌤️ Weather Dashboard
         </h1>
         <SearchBar
@@ -90,10 +101,11 @@ function App() {
           selectInput={selectInput}
           weatherData={weatherData}
         />
-        <div className='flex  justify-center items-center gap-3 rounded-3xl'>
-          {weatherData ? <h1 className='text-xl  starting:opacity-0 transition-all duration-500 rounded-3xl'>📍 {weatherData.selectedCity.name} </h1> : ""}
+        <div className='flex flex-col md:flex-row justify-center items-center gap-3 rounded-3xl'>
+          {weatherData ? <h1 className='text-xl  starting:opacity-0 transition-all duration-500 rounded-3xl'>📍 {weatherData.selectedCity.name}</h1> : ""}
           {weatherData ? <h1 className='text-xl flex  starting:opacity-0 transition-all duration-500 rounded-3xl'>
-            ☀️ {weatherData.current.temperature_2m} {weatherData.current_units.temperature_2m}</h1> : ""}
+            | ☀️ {weatherData.current.temperature_2m} {weatherData.current_units.temperature_2m} |</h1> : ""}
+          {weatherData ? dayNight() : ""}
         </div>
         <p className='text-2xl'>{error}</p>
         {weatherData && (

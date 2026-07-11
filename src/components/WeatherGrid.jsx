@@ -47,31 +47,31 @@ function WeatherGrid({ weatherData }) {
         },
         {
             icon: "🔺",
-            title: "Max Temperature :",
+            title: "Max Temperature:",
             value: weatherData.daily.temperature_2m_max[0],
             unit: weatherData.daily_units.temperature_2m_max
         },
         {
             icon: "🔻",
-            title: "Min Temperature :",
+            title: "Min Temperature:",
             value: weatherData.daily.temperature_2m_min[0],
             unit: weatherData.daily_units.temperature_2m_min
         },
         {
             icon: "🌅",
             title: "Sunrise :",
-            value: weatherData.daily.sunrise[0],
+            value: formatTime(weatherData.daily.sunrise[0]),
             unit: ""
         },
         {
             icon: "🌇",
             title: "Sunset :",
-            value: weatherData.daily.sunset[0],
+            value: formatTime(weatherData.daily.sunset[0]),
             unit: ""
         }
     ]
     return (
-        <div className='w-5/6 grid grid-cols-3 blur-4px starting:opacity-0 transition-all duration-500  bg-gray-400 rounded-4xl p-4 gap-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto border border-white/20 shadow-2xl backdrop-blur-2xl starting:opacity-0 transition-all duration-500 rounded-4xl p-4 gap-6 scrollbar-none'>
             {cards.map((card) => (
                 <WeatherCard
                     key={card.title}
